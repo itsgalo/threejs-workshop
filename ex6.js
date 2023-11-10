@@ -14,7 +14,6 @@ document.body.appendChild( renderer.domElement );
 const objects = [];
 const mouse = new THREE.Vector2()
 let raycaster = new THREE.Raycaster();
-let enableSelection = true;
 
 // init
 const camera = new THREE.PerspectiveCamera( 45, width / height, 0.001, 1000 );
@@ -32,17 +31,6 @@ const directionalLight2 = new THREE.DirectionalLight( 0xffffff, 2 );
 directionalLight2.position.set( 0, 1, -2 );
 scene.add( directionalLight2 );
 
-const light = new THREE.AmbientLight( 0xffffff, 2 );
-scene.add( light );
-
-const geometry = new THREE.BoxGeometry( 2, 2, 2 );
-const material = new THREE.MeshLambertMaterial({color: 0xff0000});
-
-const mesh = new THREE.Mesh( geometry, material );
-//scene.add( mesh );
-
-const gridHelper = new THREE.GridHelper( 10, 10 );
-//scene.add( gridHelper );
 
 const loader = new Rhino3dmLoader();
 //generally, use this for the Library Path: https://cdn.jsdelivr.net/npm/rhino3dm@8.0.0-beta2/
@@ -68,29 +56,22 @@ function onClick( event ) {
 
 	event.preventDefault();
 
-	if ( enableSelection === true ) {
+	const draggableObjects = controls.getObjects();
+	draggableObjects.length = 0;
 
-		const draggableObjects = controls.getObjects();
-		draggableObjects.length = 0;
+	mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+	mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
 
-		mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
-		mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+	raycaster.setFromCamera( mouse, camera );
 
-		raycaster.setFromCamera( mouse, camera );
+	const intersections = raycaster.intersectObjects( objects, true );
 
-		const intersections = raycaster.intersectObjects( objects, true );
+	if ( intersections.length > 0 ) {
 
-		if ( intersections.length > 0 ) {
-
-			const object = intersections[ 0 ].object;
-			draggableObjects.push( object );
-
-		}
+		const object = intersections[ 0 ].object;
+		draggableObjects.push( object );
 
 	}
-
-	//animation();
-
 }
 
 // animation
